@@ -4,4 +4,117 @@
 输入：   第一行是正整数代表要解决的案例数
          每个案例由5行构成，每一行包括6个数字
          这些数字用空格隔开可以是0或1
-         0代表灯灭，1代表灯亮
+         0代表灯灭，1代表灯
+-----------------------------------------------------实现代码-----------------------------------------------------
+#include <iostream>
+using namespace std;
+
+ int N;
+ //problems[N][6];
+ char lights[5];//存放当前灯的状态
+ char problems[100][5]={0};//存放问题
+ char solution[5];//存放解法
+ void get_problems();
+ int get_bit(char c,int n);
+ void set_bit(char* c,int n,int i);
+ void find_solution();
+ void flip_bit(char* c,int n);
+ int main()
+ {   
+    get_problems();	
+   	find_solution();
+	return 0;
+  } 
+void flip_bit(char* c,int n)
+{
+	(*c)=(*c)^(1<<n);
+}
+  
+void get_problems()
+{  int c;
+	cin>>N;
+	for(int i=0;i<N;i++)
+	{
+	    for (int j=0;j<5;j++)
+	    {
+	         for (int k=5;k>=0;k--)
+	         {
+	         	cin>>c;
+	         	set_bit(problems[i]+j,k,c); 
+			 }
+	    }
+	}    
+}
+
+int get_bit(char c,int n)
+{
+	return (c>>n)&1;
+}
+
+void set_bit(char* c,int n,int i)
+{
+	if (i)
+	*c=(*c)|(1<<n);
+	else 
+	(*c)=(*c)&~(1<<n); 
+ } 
+ 
+
+void find_solution()
+{
+	for (int now_problem=0;now_problem<N;now_problem++)
+	{
+		
+//		for (int i=0;i<5;i++)
+//		cout<<int(lights[i]);
+
+		
+		for (int slu=0;slu<64;slu++)
+		{
+			solution[0]=slu;
+			for (int m=0;m<5;m++)
+		             lights[m]=problems[now_problem][m];
+			for (int i=0;i<5;i++)
+			{
+				for (int j=0;j<6;j++)
+				 {  
+					 
+				    if(get_bit(solution[i],j)) 
+				    {
+					  flip_bit(lights+i,j);
+				 	  if(j>0)
+					   flip_bit(lights+i,j-1);
+					   if(j<5)
+					   flip_bit(lights+i,j+1);
+				    }
+				 } 
+		     
+			if(i<4)
+			 {
+			 	solution[i+1]=lights[i];
+			 	lights[i+1]=solution[i]^lights[i+1];
+			 }
+			} 
+		 if(!lights[4])
+		 {
+		 	for(int i=0;i<5;i++)
+				{
+				  
+				    for (int j=5;j>=0;j--)
+				        {
+				        	cout<<get_bit(solution[i],j)<<" ";
+						}
+						cout <<endl;
+			    }
+	      break;
+		 }
+		 if(slu==63)
+		 {
+		 	cout<<"no solution";
+		 }
+		 
+		 	
+		}
+	}
+	
+ } 
