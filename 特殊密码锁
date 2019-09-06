@@ -1,0 +1,127 @@
+描述
+有一种特殊的二进制密码锁，由n个相连的按钮组成（n<30），按钮有凹/凸两种状态，用手按按钮会改变其状态。
+然而让人头疼的是，当你按一个按钮时，跟它相邻的两个按钮状态也会反转。当然，如果你按的是最左或者最右边的按钮，该按钮只会影响到跟它相邻的一个按钮。
+当前密码锁状态已知，需要解决的问题是，你至少需要按多少次按钮，才能将密码锁转变为所期望的目标状态。
+
+输入两行，给出两个由0、1组成的等长字符串，表示当前/目标密码锁状态，其中0代表凹，1代表凸。
+输出至少需要进行的按按钮操作次数，如果无法实现转变，则输出impossible。
+样例输入
+011
+000
+样例输出
+1
+-------------------------------------------------------------------------------------------------------------------------------
+#include <iostream>
+#include <cstring>
+#define SUCCESS 1
+#define DEFEAT 0
+using namespace std;
+
+void print_solution();
+void flip_bit(int* i,int k);
+int  get_bit(int i,int k);
+void set_bit(int* i,int k,char c);
+void flip_lock(int* i,int k);
+void read_problem();
+int solve_problem(int case_);
+
+int initial_lock,final_lock,solution,current_lock;
+int length;
+
+ 
+int main()
+{
+    read_problem();
+    if(get_bit(initial_lock,0)==get_bit(final_lock,0))
+        {
+            if(!solve_problem(1))
+            cout<<"impossible";
+        }    
+    else
+    if(~(solve_problem(2)|solve_problem(3)))
+    cout<<"impossible";
+
+    return 0;
+}
+
+void flip_bit(int* i,int k)
+{ 
+    (*i)^=1<<k;  
+}
+
+int  get_bit(int i,int k)
+{
+    return (i>>k)&1;
+}
+
+void set_bit(int* i,int k,char c)
+{
+    if(c=='1')
+    (*i)|=(1<<k);
+    else if(c=='0')
+    (*i)&=~(1<<k);
+}
+
+void flip_lock(int* i,int k)
+{
+    flip_bit(i,k);
+    if (k>0)
+    flip_bit(i,k-1);
+    if(k<length-1)
+    flip_bit(i,k+1);
+    
+}
+
+void read_problem()
+{
+    string ini,fin;
+    getline(cin,ini);
+    getline(cin,fin);
+    length=ini.length();
+
+    for (int i=0;i<length;i++)
+    {
+        set_bit(&initial_lock,i,ini[i]);
+        set_bit(&final_lock,i,fin[i]);
+    }
+}
+
+int solve_problem(int case_)//case1:第一个锁和预期相同，case2：第一个锁和预期不同，按第一个按钮，case3：第一个锁和预期不同，按第二个按钮
+{   
+    int current_lock=initial_lock;
+    switch (case_)
+    {
+    case 1:
+        break;
+    case 2://按下最左侧
+         flip_lock(&current_lock,0);
+         set_bit(&solution,0,'1');
+         break;
+    case 3://按下第一个按钮
+        flip_lock(&current_lock,1);
+        set_bit(&solution,1,'1');
+    default:
+        break;
+    }
+    for (int i=1;i<length-1;i++)
+    {
+        if(get_bit(current_lock,i)!=get_bit(final_lock,i))
+            {
+                flip_lock(&current_lock,i+1);
+                set_bit(&solution,i+1,'1');
+            }
+    }
+    if(!current_lock)
+    {
+        print_solution();
+        return SUCCESS;
+    }
+    else
+    return DEFEAT;
+}
+
+void print_solution()
+{
+    for (int i=0;i<length;i++)
+    cout<<get_bit(solution,i);
+}
