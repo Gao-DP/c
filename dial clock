@@ -1,0 +1,150 @@
+有9个时钟，排成一个3*3的矩阵。
+
+|-------|    |-------|    |-------|
+|       |    |       |    |   |   |
+|---O   |    |---O   |    |   O   |
+|       |    |       |    |       |
+|-------|    |-------|    |-------|
+    A            B            C    
+
+|-------|    |-------|    |-------|
+|       |    |       |    |       |
+|   O   |    |   O   |    |   O   |
+|   |   |    |   |   |    |   |   |
+|-------|    |-------|    |-------|
+    D            E            F    
+
+|-------|    |-------|    |-------|
+|       |    |       |    |       |
+|   O   |    |   O---|    |   O   |
+|   |   |    |       |    |   |   |
+|-------|    |-------|    |-------|
+    G            H            I    
+
+现在需要用最少的移动，将9个时钟的指针都拨到12点的位置。共允许有9种不同的移动。如下表所示，每个移动会将若干个时钟的指针沿顺时针方向拨动90度。
+
+移动    影响的时钟
+ 
+ 1         ABDE
+ 2         ABC
+ 3         BCEF
+ 4         ADG
+ 5         BDEFH
+ 6         CFI
+ 7         DEGH
+ 8         GHI
+ 9         EFHI    
+ 输入
+9个整数，表示各时钟指针的起始位置，相邻两个整数之间用单个空格隔开。其中，0=12点、1=3点、2=6点、3=9点。
+输出
+输出一个最短的移动序列，使得9个时钟的指针都指向12点。按照移动的序号从小到大输出结果。相邻两个整数之间用单个空格隔开。
+样例输入
+3 3 0 
+2 2 2 
+2 1 2 
+样例输出
+4 5 8 9
+--------------------------------------------------------------思路--------------------------------------------------------------------
+对于一个方法，拨动4次和拨动一次没有区别，所以拨动次数最多为3次，所以可以枚举考虑，对于1-9九种拨钟方法，共有4^9次枚举262144，这个数目并不小，所以尽
+可能减少枚举次数，将题目写成矩阵形式，以及相应的数学语言
+  (A B C D E F G H I)
+一 1 1 0 1 1 0 0 0 0 
+二 1 1 1 0 0 0 0 0 0
+三 0 1 1 0 1 1 0 0 0
+四 1 0 0 1 0 0 1 0 0
+五 0 1 0 1 1 1 0 1 0
+六 0 0 1 0 0 1 0 0 1
+七 0 0 0 1 1 0 1 1 0
+八 0 0 0 0 0 0 1 1 1 
+九 0 0 0 0 1 1 0 1 1
+当输入一组预期的表的状态，我们可以计算出每个位置的钟需要拨几次可以得到0点的位置，于是将每个钟需要拨的次数写成一个一行9列的向量α
+上面矩阵第i行记为αi，我们目的是找到系数a1、a2...a9使a1α1+....a9α9=α
+于是进行枚举，当进行到第四个循环后，我们发现，此时第一个钟必须要满足a1α1(1)+a2α2(1)+a4α4(1)=α(1)
+于是可以排除一些a1、a2、a4的组合，同理这样进行下去，会很大的减少需要循环的次数
+--------------------------------------------------------------code---------------------------------------------------------------------
+#include <iostream>
+using namespace std;
+#define SUCCESS 1
+#define DEFEAT 0
+
+int  problem[9];
+int  times_need2dial[9];
+int solution[9];
+
+void get_problem();
+int get_solution();
+void print_solution();
+
+
+int main()
+{
+    get_problem();
+    if(get_solution())
+         print_solution();    
+    return 0;
+}
+void get_problem()
+{     
+    for (int i=0;i<9;i++)
+    {
+        cin>>problem[i];
+        if(i==2|i==5)
+        getchar(); 
+        times_need2dial[i]=(4-problem[i])%4;
+    }
+}
+
+int get_solution()
+{
+    for(solution[0]=0;solution[0]<4;solution[0]++)
+        for(solution[1]=0;solution[1]<4;solution[1]++)
+            for(solution[2]=0;solution[2]<4;solution[2]++)
+                for(solution[3]=0;solution[3]<4;solution[3]++)
+                if((solution[0]+solution[1]+solution[3]-times_need2dial[0])%4==0)
+                {
+                    for(solution[4]=0;solution[4]<4;solution[4]++)
+                    if((solution[0]+solution[1]+solution[2]+solution[4]-times_need2dial[1])%4==0)
+                    {
+                        for(solution[5]=0;solution[5]<4;solution[5]++)
+                        if((solution[1]+solution[2]+solution[5]-times_need2dial[2])%4==0)
+                        {
+                            for(solution[6]=0;solution[6]<4;solution[6]++)
+                            if((solution[0]+solution[3]+solution[4]+solution[6]-times_need2dial[3])%4==0)
+                            {
+                                for(solution[7]=0;solution[7]<4;solution[7]++)
+                                if((solution[3]+solution[6]+solution[7]-times_need2dial[6])%4==0)
+                                {
+                                    for(solution[8]=0;solution[8]<4;solution[8]++)
+                                    if((solution[0]+solution[2]+solution[4]+solution[6]+solution[8]-times_need2dial[4])%4==0
+                                    &&(solution[2]+solution[4]+solution[5]+solution[8]-times_need2dial[5])%4==0
+                                    &&(solution[4]+solution[6]+solution[7]+solution[8]-times_need2dial[7])%4==0
+                                    &&(solution[5]+solution[7]+solution[8]-times_need2dial[8])%4==0
+                                    )
+                                    return SUCCESS;
+                                }
+                            }
+                        }
+                    }
+                }
+    cout<<"no solution";
+    return DEFEAT;
+}
+
+void print_solution()
+{
+    for (int i=0;i<9;i++)
+    {
+        if(solution[i]>0)
+        {
+            cout<<i+1<<" ";
+        }
+    }
+}
+-------------------------------------------------------其它可能解法-----------------------------------------------------------------------
+考察A,E,I三个钟的调法，发现只考虑将这三个钟调到预期的状态时，就会得到几组可能的a1、a2...a9的取值，而得到这样一组取值，我们只需要少于3*3^4个枚举，然后
+在这几组可能的取值中，利用剩下钟去判别可行解
+
+   
+   
+   
+   
