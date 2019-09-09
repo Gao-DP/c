@@ -1,0 +1,86 @@
+目的：
+输入为四则运算表达式，仅由 + - * / (  )组成，没有空格，要求求其值，假设运算符结果都是整数，/运算的结果也是整数
+===========================================================================================================================================
+思路：
+对于一个表达式，表达式是由项构成的，表达式既可以是一项，也可以是两项的和与差的形式
+对于一个项，项是由银子构成的，它既可以是两个因子的和也可以是两个因子的差构成
+对于一个因子，它要么是一个数，要么是一个带()的项
+于是构成递归
+=================================================================code============================================================================
+#include <iostream>
+#include<cstdio>
+#include<cstdlib>
+using namespace std;
+#define TRUE 1
+#define FALSE 0
+
+int find_term();
+int calculate_expession();
+int find_factor();
+
+
+int main()
+{
+    cout<<calculate_expession()<<endl;
+    return 0;
+}
+
+int calculate_expession()
+{
+    int result =find_term();
+    char c=cin.peek();
+    if(c=='+'|c=='-')
+    {
+        getchar();
+        if(c=='+')
+        return result+=find_term();
+        else
+        return result-=find_term(); 
+    }
+    else
+        return result;
+    
+}
+
+
+int find_term()
+{
+    int result=find_factor();
+    char c=cin.peek();
+    if(c=='*'|c=='/')
+    {
+        getchar();
+        if(c=='*')
+        return result*=find_factor();
+        else 
+        return result /=find_factor();
+    }
+    else
+    return result;
+}
+
+
+int find_factor()
+{
+    int result=0;
+    char c=cin.peek();
+    if(c=='(')
+    {
+        getchar();
+        result=find_term();
+        getchar();
+        
+    }    
+    else
+    {
+        getchar();
+        while (c>='0'&&c<='9')
+        {
+            result=10*result+(c-'0');
+            c=cin.peek();
+            getchar();
+        }
+        
+    }
+    return result;
+}
