@@ -1,0 +1,147 @@
+描述
+The objective of the program you are going to produce is to evaluate boolean expressions as the one shown next:
+Expression: ( V | V ) & F & ( F | V )
+
+where V is for True, and F is for False. The expressions may include the following operators: ! for not , & for and, | for or , the use of parenthesis for operations grouping is also allowed.
+
+To perform the evaluation of an expression, it will be considered the priority of the operators, the not having the highest, and the or the lowest. The program must yield V or F , as the result for each expression in the input file.
+输入
+The expressions are of a variable length, although will never exceed 100 symbols. Symbols may be separated by any number of spaces or no spaces at all, therefore, the total length of an expression, as a number of characters, is unknown.
+
+The number of expressions in the input file is variable and will never be greater than 20. Each expression is presented in a new line, as shown below.
+输出
+For each test expression, print "Expression " followed by its sequence number, ": ", and the resulting value of the corresponding test expression. Separate the output for consecutive test expressions with a new line.
+
+Use the same format as that shown in the sample output shown below.
+样例输入
+( V | V ) & F & ( F| V)
+!V | V & V & !F & (F | V ) & (!F | F | !V & V)
+(F&F|V|!V&!F&!(F|F&V))
+样例输出
+Expression 1: F
+Expression 2: V
+Expression 3: V
+
+==============================================================思路===========================================================================
+由于运算符的优先级是 !>&>|
+利用递归算法进行求解
+如果表达式长度大于1，那么肯定有运算符，那么进行下面讨论
+情况一：先寻找不在括号内部的|，将表达式分成两部分，返回他们的值做或运算的结果
+情况二：当表达式不满足情况一时，如果表达式中有不在括号内的&运算符，那么继续将表达式分成两部分，返回他们的值做与运算结果
+情况三：当情况二不成立，此时，表达式中如果有！运算符，一定在第一位，且后面要么是括号要么只有一项，此时返回！后面表达式的值做非运算
+情况四：当情况三不成立，那么此时可能存在括号，但是只有可能是首相是"("尾项是")"，那么去掉括号得到新的表达式
+如果表达式长度是1，那么该条件可以用来结束递归
+==============================================================code=========================================================================
+#include <iostream>
+using namespace std;
+#define TRUE 1
+#define FALSE 0
+#define BOOL int
+
+char expression[21];
+int length=0;
+
+BOOL circulation_expression(int begin ,int end);
+BOOL find_or(int begin,int end,int &position);
+BOOL find_and(int begin,int end,int &position);
+BOOL find_not(int begin);
+BOOL find_parenthesis(int begin,int end);
+BOOL is_in_parenthesis(int begin,int end,int current_position);
+
+int main()
+{   
+    cin>>expression;
+    for (int i=0;expression[i];i++,length++);
+    if(circulation_expression(0,length-1))
+    cout<<"V"<<endl;
+    else
+    cout<<"F"<<endl;
+    return 0;
+}
+
+BOOL circulation_expression(int begin ,int end)
+{   
+    if(begin==end)
+    {
+        if(expression[begin]=='V')
+        return TRUE;
+        else if(expression[begin]=='F')
+        return FALSE; 
+    }
+    else
+    {
+        int current_position;
+        if(find_or(begin,end,current_position))
+            return  circulation_expression(begin,current_position-1)||circulation_expression(current_position+1,end);
+        if(find_and(begin,end,current_position))
+            return circulation_expression(begin,current_position-1)&&circulation_expression(current_position+1,end);
+        if(find_not(begin))
+            return !circulation_expression(begin+1,end);
+        if(find_parenthesis(begin,end))
+            return circulation_expression(begin+1,end-1);
+    }
+}
+
+BOOL find_or(int begin,int end,int &position)
+{
+    for (int i=begin;i<end;i++)
+    {
+        if(expression[i]=='|')
+        {
+            if(!is_in_parenthesis(begin,end,i))
+            {
+                position=i;
+                return TRUE;
+            }
+        }
+    }
+    return FALSE;
+}
+
+BOOL find_and(int begin,int end,int &position)
+{
+    for (int i=begin;i<end;i++)
+    {
+        if(expression[i]=='&')
+        {
+            if(!is_in_parenthesis(begin,end,i))
+            {
+                position=i;
+                return TRUE;
+            }
+        }
+    }
+    return FALSE;
+}
+
+BOOL find_not(int begin)
+{
+    if(expression[begin]=='!')
+    return TRUE;
+    else
+    return FALSE;
+}
+
+BOOL find_parenthesis(int begin,int end)
+{
+    if(expression[begin]=='('&&expression[end]==')')
+    return TRUE;
+    else
+    return FALSE;
+}
+
+BOOL is_in_parenthesis(int begin,int end,int current_position)
+{
+    for (int i=begin;i<current_position;i++)
+    {
+        if(i=='(')
+        for(int j=i+1;j<=end;j++)
+        {
+            if(j==')'&&j<current_position)
+            break;
+            if(j==')'&&j>current_position)
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
